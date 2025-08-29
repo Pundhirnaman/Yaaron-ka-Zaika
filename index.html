@@ -1,0 +1,1902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yaaron ka Zaika - Delicious Food Delivery</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Add SheetJS library for Excel file generation -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    :root{
+        --primary:#ff6b35;--secondary:#2d3047;--accent:#ff9e1b;
+        --light:#f8f9fa;--dark:#343a40;--success:#28a745;--danger:#dc3545;
+        --gradient:linear-gradient(135deg,var(--primary) 0%,var(--accent) 100%);
+        --card-shadow:0 10px 30px rgba(0,0,0,0.08);
+        --hover-shadow:0 15px 35px rgba(0,0,0,0.15);
+    }
+    body{font-family:'Poppins',sans-serif;background-color:#fcfcfc;color:var(--dark);line-height:1.6;}
+    .container{max-width:1200px;margin:0 auto;padding:0 20px;}
+    
+    /* Header Styles */
+    header{background:var(--gradient);padding:1rem 0;box-shadow:0 4px 20px rgba(0,0,0,0.1);position:sticky;top:0;z-index:1000;}
+    .header-content{display:flex;justify-content:space-between;align-items:center;}
+    .logo{font-size:2.2rem;font-weight:800;color:white;text-shadow:2px 2px 4px rgba(0,0,0,0.2);display:flex;align-items:center;cursor:pointer;}
+    .logo span{color:var(--secondary);margin-left:5px;}
+    .logo i{font-size:1.8rem;margin-right:10px;}
+    nav{display:flex;gap:1rem;flex-wrap:wrap;}
+    nav button{background:rgba(255,255,255,0.15);backdrop-filter:blur(10px);border:2px solid rgba(255,255,255,0.3);color:white;padding:0.6rem 1.2rem;border-radius:30px;cursor:pointer;font-weight:500;transition:all 0.3s ease;font-size:0.95rem;}
+    nav button:hover{background:rgba(255,255,255,0.25);transform:translateY(-3px);box-shadow:0 5px 15px rgba(0,0,0,0.1);}
+    .cart-count{background:var(--danger);color:white;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:0.75rem;margin-left:5px;font-weight:600;}
+    
+    /* Main Content */
+    main{padding:2.5rem 0;min-height:calc(100vh - 200px);}
+    .page{display:none;animation:fadeOut 0.3s ease;}
+    .page.active{display:block;animation:fadeIn 0.5s ease;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+    @keyframes fadeOut{from{opacity:1;transform:translateY(0);}to{opacity:0;transform:translateY(20px);}}
+    
+    /* Hero Section */
+    .hero{background:linear-gradient(rgba(0,0,0,0.7),rgba(0,0,0,0.7)),url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80') center/cover;color:white;padding:5rem 2rem;text-align:center;border-radius:20px;margin-bottom:3rem;position:relative;overflow:hidden;}
+    .hero:before{content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:var(--gradient);opacity:0.4;z-index:0;}
+    .hero-content{position:relative;z-index:1;}
+    .hero h1{font-size:3.5rem;margin-bottom:1rem;text-shadow:2px 2px 8px rgba(0,0,0,0.4);font-weight:700;}
+    .hero p{font-size:1.3rem;margin-bottom:2.5rem;max-width:700px;margin-left:auto;margin-right:auto;}
+    .btn{padding:0.85rem 2.5rem;border:none;border-radius:50px;font-size:1rem;font-weight:600;cursor:pointer;transition:all 0.3s ease;display:inline-block;text-align:center;}
+    .btn-primary{background:var(--primary);color:white;box-shadow:0 5px 15px rgba(255,107,53,0.3);}
+    .btn-primary:hover{background:#e55a2a;transform:translateY(-3px);box-shadow:0 8px 20px rgba(255,107,53,0.4);}
+    .btn-large{padding:1rem 3rem;font-size:1.1rem;}
+    
+    /* Products Grid */
+    .section-title{text-align:center;margin-bottom:3rem;color:var(--secondary);font-size:2.2rem;font-weight:700;position:relative;}
+    .section-title:after{content:'';position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);width:80px;height:4px;background:var(--gradient);border-radius:2px;}
+    .products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:2.5rem;margin:2rem 0;}
+    .product-card{background:white;border-radius:20px;overflow:hidden;box-shadow:var(--card-shadow);transition:all 0.3s ease;position:relative;}
+    .product-card:hover{transform:translateY(-8px);box-shadow:var(--hover-shadow);}
+    .product-image{height:200px;width:100%;object-fit:cover;transition:transform 0.5s ease;}
+    .product-card:hover .product-image{transform:scale(1.05);}
+    .product-info{padding:1.5rem;}
+    .product-title{font-size:1.25rem;font-weight:600;margin-bottom:0.5rem;color:var(--secondary);}
+    .product-description{color:#777;margin-bottom:1rem;font-size:0.9rem;line-height:1.5;}
+    .product-price{font-size:1.4rem;font-weight:700;color:var(--primary);margin-bottom:1rem;}
+    .product-actions{display:flex;justify-content:space-between;align-items:center;}
+    .quantity-controls{display:flex;align-items:center;gap:0.8rem;}
+    .quantity-btn{width:38px;height:38px;border:none;border-radius:50%;background:var(--primary);color:white;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s ease;}
+    .quantity-btn:hover{background:#e55a2a;transform:scale(1.1);}
+    .quantity-btn:disabled{background:#ccc;cursor:not-allowed;transform:none;}
+    .quantity-display{font-size:1.2rem;font-weight:bold;min-width:30px;text-align:center;}
+    .add-to-cart-btn{background:var(--secondary);color:white;border:none;padding:0.6rem 1.5rem;border-radius:30px;font-weight:500;cursor:pointer;transition:all 0.3s ease;}
+    .add-to-cart-btn:hover{background:#3c3f5a;transform:translateY(-2px);}
+    .order-now-btn{background:var(--primary);color:white;border:none;padding:0.6rem 1.5rem;border-radius:30px;font-weight:500;cursor:pointer;transition:all 0.3s ease;margin-left:1rem;}
+    .order-now-btn:hover{background:#e55a2a;transform:translateY(-2px);}
+    
+    /* Forms */
+    .form-container{max-width:500px;margin:2rem auto;background:white;padding:2.5rem;border-radius:20px;box-shadow:var(--card-shadow);}
+    .form-title{text-align:center;margin-bottom:2rem;color:var(--secondary);font-size:1.8rem;font-weight:600;}
+    .form-group{margin-bottom:1.8rem;}
+    .form-group label{display:block;margin-bottom:0.6rem;font-weight:500;color:var(--secondary);}
+    .form-control{width:100%;padding:0.9rem 1.2rem;border:2px solid #eee;border-radius:10px;font-size:1rem;transition:all 0.3s ease;font-family:'Poppins',sans-serif;}
+    .form-control:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(255,107,53,0.2);}
+    textarea.form-control{min-height:120px;resize:vertical;}
+    .form-footer{text-align:center;margin-top:1.5rem;}
+    .form-footer a{color:var(--primary);text-decoration:none;font-weight:500;}
+    .form-footer a:hover{text-decoration:underline;}
+    
+    /* Cart */
+    .cart-item{display:flex;align-items:center;gap:1.5rem;padding:1.5rem;background:white;border-radius:15px;margin-bottom:1.2rem;box-shadow:var(--card-shadow);transition:transform 0.3s ease;}
+    .cart-item:hover{transform:translateY(-3px);}
+    .cart-item-image{width:90px;height:90px;object-fit:cover;border-radius:10px;}
+    .cart-item-info{flex:1;}
+    .cart-item-title{font-size:1.2rem;font-weight:600;color:var(--secondary);margin-bottom:0.4rem;}
+    .cart-item-desc{color:#777;margin-bottom:0.8rem;font-size:0.9rem;}
+    .cart-item-price{font-size:1.2rem;font-weight:600;color:var(--primary);}
+    .cart-total{font-size:1.8rem;font-weight:700;text-align:right;margin:2.5rem 0;color:var(--secondary);padding:1rem;background:white;border-radius:15px;box-shadow:var(--card-shadow);}
+    .checkout-btn{display:block;width:100%;padding:1.2rem;font-size:1.1rem;margin-top:1.5rem;}
+    
+    /* Payment Options */
+    .payment-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem;margin:2.5rem 0;}
+    .payment-option{background:white;padding:2rem;border-radius:15px;text-align:center;cursor:pointer;border:2px solid #eee;transition:all 0.3s ease;}
+    .payment-option:hover,.payment-option.selected{border-color:var(--primary);background:#fff8f0;transform:translateY(-5px);}
+    .payment-option i{font-size:3.2rem;color:var(--primary);margin-bottom:1.2rem;}
+    .payment-option h3{font-size:1.2rem;color:var(--secondary);margin-bottom:0.5rem;}
+    
+    /* QR Upload */
+    .qr-upload{display:none;text-align:center;margin:2rem 0;}
+    .qr-upload img{max-width:250px;margin:1rem 0;border:2px dashed #ddd;padding:1rem;border-radius:10px;}
+    .file-upload{display:flex;flex-direction:column;align-items:center;gap:1rem;margin:1.5rem 0;}
+    .file-upload-label{display:inline-block;padding:1rem 2rem;background:var(--secondary);color:white;border-radius:10px;cursor:pointer;transition:all 0.3s ease;}
+    .file-upload-label:hover{background:#3c3f5a;}
+    
+    /* Admin Section */
+    .admin-section{background:white;padding:2.5rem;border-radius:20px;margin:2.5rem 0;box-shadow:var(--card-shadow);}
+    .admin-table{width:100%;border-collapse:collapse;margin:1.5rem 0;border-radius:10px;overflow:hidden;box-shadow:var(--card-shadow);}
+    .admin-table th,.admin-table td{padding:1.2rem;text-align:left;border-bottom:1px solid #eee;}
+    .admin-table th{background:var(--secondary);color:white;font-weight:500;}
+    .admin-table tr:last-child td{border-bottom:none;}
+    .admin-table tr:hover{background:#f9f9f9;}
+    .admin-table img{width:60px;height:60px;object-fit:cover;border-radius:8px;}
+    
+    /* Order Success */
+    .order-success{text-align:center;padding:3rem;}
+    .order-success i{font-size:5rem;color:var(--success);margin-bottom:1.5rem;}
+    .order-success h2{font-size:2.5rem;color:var(--secondary);margin-bottom:1rem;}
+    .order-details{background:white;padding:2rem;border-radius:15px;box-shadow:var(--card-shadow);max-width:600px;margin:2rem auto;text-align:left;}
+    .order-details h3{color:var(--secondary);margin-bottom:1.5rem;padding-bottom:0.5rem;border-bottom:2px solid #eee;}
+    .order-details-row{display:flex;justify-content:space-between;margin-bottom:1rem;padding-bottom:0.5rem;border-bottom:1px solid #f5f5f5;}
+    
+    /* Footer */
+    footer{background:var(--secondary);color:white;padding:3rem 0;text-align:center;margin-top:4rem;}
+    .footer-content{display:flex;flex-direction:column;align-items:center;}
+    .social-icons{display:flex;gap:1.2rem;margin:1.5rem 0;}
+    .social-icons a{width:45px;height:45px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;color:white;font-size:1.2rem;transition:all 0.3s ease;}
+    .social-icons a:hover{background:var(--primary);transform:translateY(-3px);}
+    .contact-info{margin:1.2rem 0;}
+    .contact-info p{margin:0.7rem 0;display:flex;align-items:center;justify-content:center;gap:10px;}
+    .contact-info i{color:var(--accent);}
+    .copyright{margin-top:1.5rem;color:rgba(255,255,255,0.7);font-size:0.9rem;}
+    
+    /* Responsive Design */
+    @media(max-width:992px){
+        .products-grid{grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:2rem;}
+        .hero h1{font-size:2.8rem;}
+    }
+    @media(max-width:768px){
+        .header-content{flex-direction:column;gap:1.2rem;}
+        nav{justify-content:center;}
+        .hero{padding:3.5rem 1.5rem;}
+        .hero h1{font-size:2.3rem;}
+        .hero p{font-size:1.1rem;}
+        .section-title{font-size:1.9rem;}
+        .form-container{padding:2rem;}
+        .cart-item{flex-direction:column;text-align:center;}
+        .cart-item-image{width:100%;height:180px;}
+    }
+    @media(max-width:576px){
+        .products-grid{grid-template-columns:1fr;gap:1.8rem;}
+        .payment-options{grid-template-columns:1fr;}
+        .admin-section{padding:1.5rem;}
+    }
+    
+    /* Animations & Utilities */
+    .fade-in{animation:fadeIn 0.5s ease;}
+    .shake{animation:shake 0.5s ease;}
+    @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-5px);}75%{transform:translateX(5px);}}
+    .notification{position:fixed;top:25px;right:25px;padding:1.2rem 2.2rem;background:var(--success);color:white;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.15);z-index:1001;transform:translateX(100%);transition:transform 0.4s ease;}
+    .notification.show{transform:translateX(0);}
+    .notification.error{background:var(--danger);}
+    .text-center{text-align:center;}
+    .mb-3{margin-bottom:1.5rem;}
+    .hidden{display:none;}
+    
+    /* Order Popup */
+    .order-popup{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:1002;}
+    .popup-content{background:white;padding:2rem;border-radius:15px;max-width:500px;text-align:center;}
+    .dropdown{position:relative;display:inline-block;}
+    .dropdown-content{display:none;position:absolute;right:0;background-color:white;box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);z-index:1;min-width:160px;}
+    .dropdown-content a{color:black;padding:12px 16px;text-decoration:none;display:block;}
+    .dropdown-content a:hover {background-color:#f1f1f1;}
+</style>
+</head>
+<body>
+<div id="notification" class="notification"></div>
+<header>
+<div class="container">
+<div class="header-content">
+<div class="logo" onclick="showPage('home')"><i class="fas fa-utensils"></i>Yaaron <span>ka</span> Zaika</div>
+<nav>
+<button onclick="showPage('home')"><i class="fas fa-home"></i> Home</button>
+<button onclick="showPage('menu')"><i class="fas fa-burger"></i> Menu</button>
+<button onclick="showPage('about')"><i class="fas fa-info-circle"></i> About</button>
+<button onclick="showPage('contact')"><i class="fas fa-phone"></i> Contact</button>
+<button onclick="showPage('cart')">
+<i class="fas fa-shopping-cart"></i> Cart <span id="cart-count" class="cart-count">0</span>
+</button>
+<div class="dropdown">
+<button id="auth-btn"><i class="fas fa-user"></i> Login</button>
+<div id="dropdown-content" class="dropdown-content">
+</div>
+</div>
+</nav>
+</div>
+</div>
+</header>
+<main>
+<div class="container">
+<!-- Home Page -->
+<div id="home" class="page active">
+<div class="hero">
+<div class="hero-content">
+<h1>Welcome to Yaaron ka Zaika</h1>
+<p>Delicious food delivered to your doorstep. Experience the taste of authentic flavors with a modern twist.</p>
+<button class="btn btn-primary btn-large" onclick="showPage('menu')">Order Now <i class="fas fa-arrow-right"></i></button>
+</div>
+</div>
+<div class="featured-products">
+<h2 class="section-title">Featured Dishes</h2>
+<div class="products-grid" id="featured-products"></div>
+</div>
+</div>
+
+<!-- Menu Page -->
+<div id="menu" class="page">
+<h2 class="section-title">Our Delicious Menu</h2>
+<div class="products-grid" id="products-container"></div>
+</div>
+
+<!-- About Page -->
+<div id="about" class="page">
+<div class="form-container">
+<h2 class="form-title">About Us</h2>
+<p class="text-center mb-3">
+Yaaron ka Zaika is more than just a restaurant - it's a culinary experience. Founded in 2020, we've been serving delicious, authentic food with a modern twist. Our chefs use only the freshest ingredients to create mouth-watering dishes that bring people together.
+</p>
+<p class="text-center mb-3">
+We believe that good food is not just about taste, but about the experience. That's why we pay attention to every detail, from sourcing our ingredients to presenting our dishes.
+</p>
+<img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80" alt="Restaurant Interior" style="width:100%;border-radius:15px;margin-top:1.5rem;">
+</div>
+</div>
+
+<!-- Contact Page -->
+<div id="contact" class="page">
+<div class="form-container">
+<h2 class="form-title">Contact Us</h2>
+<form id="contact-form">
+<div class="form-group">
+<label for="name">Your Name</label>
+<input type="text" class="form-control" id="name" required placeholder="Enter your name">
+</div>
+<div class="form-group">
+<label for="email">Email Address</label>
+<input type="email" class="form-control" id="email" required placeholder="Enter your email">
+</div>
+<div class="form-group">
+<label for="message">Your Message</label>
+<textarea class="form-control" id="message" rows="4" required placeholder="How can we help you?"></textarea>
+</div>
+<button type="submit" class="btn btn-primary" style="width:100%">Send Message</button>
+</form>
+</div>
+</div>
+
+<!-- Cart Page -->
+<div id="cart" class="page">
+<h2 class="section-title">Your Cart</h2>
+<div id="cart-items"></div>
+<div class="cart-total" id="cart-total">Total: ₹0</div>
+<button class="btn btn-primary checkout-btn" onclick="checkout()">Proceed to Checkout</button>
+
+<div id="checkout-section" style="display:none;margin-top:3rem;">
+<h3 class="form-title">Delivery Address</h3>
+<select id="address-select" class="form-control" onchange="loadAddress()">
+<option value="new">Add New Address</option>
+</select>
+<div class="form-group">
+<label for="full-name">Full Name</label>
+<input type="text" class="form-control" id="full-name" required>
+</div>
+<div class="form-group">
+<label for="phone">Phone Number</label>
+<input type="tel" class="form-control" id="phone" required>
+</div>
+<div class="form-group">
+<label for="state">State</label>
+<select id="state" class="form-control" onchange="updateCities()" required>
+<option value="">Select State</option>
+</select>
+</div>
+<div class="form-group">
+<label for="city">City</label>
+<select id="city" class="form-control" required>
+<option value="">Select City</option>
+</select>
+</div>
+<div class="form-group">
+<label for="address">Full Address</label>
+<textarea class="form-control" id="address" rows="3" required></textarea>
+</div>
+<div class="form-group">
+<label for="pincode">Pincode</label>
+<input type="text" class="form-control" id="pincode" required>
+</div>
+<button type="button" class="btn btn-primary" onclick="useCurrentLocation()" style="width:100%;margin-bottom:1rem">Use Current Location</button>
+<button type="button" class="btn btn-primary" onclick="saveAddress()" style="width:100%">Save Address & Continue</button>
+</div>
+
+<div id="payment-section" style="display:none;margin-top:3rem;">
+<h3 class="form-title">Select Payment Method</h3>
+<div class="payment-options">
+<div class="payment-option" onclick="selectPayment('card')">
+<i class="fas fa-credit-card"></i>
+<h3>Credit/Debit Card</h3>
+<p>Pay securely with your card</p>
+</div>
+<div class="payment-option" onclick="selectPayment('upi')">
+<i class="fas fa-mobile-alt"></i>
+<h3>UPI Payment</h3>
+<p>Pay using any UPI app</p>
+</div>
+<div class="payment-option" onclick="selectPayment('cod')">
+<i class="fas fa-money-bill-wave"></i>
+<h3>Cash on Delivery</h3>
+<p>Pay when you receive</p>
+</div>
+</div>
+
+<div id="qr-upload" class="qr-upload">
+<h3 class="form-title">Upload Payment Screenshot</h3>
+<p>Please make payment to UPI ID: <strong>yaaronkazaika@upi</strong></p>
+<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=UPIID:yaaronkazaika@upi" alt="QR Code">
+<div class="file-upload">
+<label for="payment-screenshot" class="file-upload-label">
+<i class="fas fa-upload"></i> Upload Screenshot
+</label>
+<input type="file" id="payment-screenshot" accept="image/*" style="display:none" onchange="previewImage(this)">
+<img id="preview" src="" alt="Preview" style="max-width:200px;display:none;margin-top:1rem;">
+</div>
+</div>
+
+<button class="btn btn-primary checkout-btn" onclick="placeOrder()">Place Order</button>
+</div>
+</div>
+
+<!-- Login Page -->
+<div id="login" class="page">
+<div class="form-container">
+<h2 class="form-title">Login to Your Account</h2>
+<div class="form-group">
+<label for="login-email">Email Address</label>
+<input type="email" class="form-control" id="login-email" placeholder="Enter your email">
+</div>
+<div class="form-group">
+<label for="login-password">Password</label>
+<input type="password" class="form-control" id="login-password" placeholder="Enter your password">
+</div>
+<button class="btn btn-primary" onclick="userLogin()" style="width:100%">Login</button>
+<div class="form-footer">
+<p>Don't have an account? <a href="#" onclick="showPage('signup')">Sign up here</a></p>
+</div>
+</div>
+</div>
+
+<!-- Signup Page -->
+<div id="signup" class="page">
+<div class="form-container">
+<h2 class="form-title">Create New Account</h2>
+<div class="form-group">
+<label for="signup-name">Full Name</label>
+<input type="text" class="form-control" id="signup-name" placeholder="Enter your full name">
+</div>
+<div class="form-group">
+<label for="signup-email">Email Address</label>
+<input type="email" class="form-control" id="signup-email" placeholder="Enter your email">
+</div>
+<div class="form-group">
+<label for="signup-phone">Phone Number</label>
+<input type="tel" class="form-control" id="signup-phone" placeholder="Enter your phone number">
+</div>
+<div class="form-group">
+<label for="signup-password">Password</label>
+<input type="password" class="form-control" id="signup-password" placeholder="Create a password">
+</div>
+<div class="form-group">
+<label for="signup-confirm">Confirm Password</label>
+<input type="password" class="form-control" id="signup-confirm" placeholder="Confirm your password">
+</div>
+<button class="btn btn-primary" onclick="userSignup()" style="width:100%">Create Account</button>
+<div class="form-footer">
+<p>Already have an account? <a href="#" onclick="showPage('login')">Login here</a></p>
+</div>
+</div>
+</div>
+
+<!-- Order Success Page -->
+<div id="order-success" class="page">
+<div class="order-success">
+<i class="fas fa-check-circle"></i>
+<h2>Order Placed Successfully!</h2>
+<p>Your order has been confirmed and will be delivered soon.</p>
+<div class="order-details">
+<h3>Order Details</h3>
+<div id="order-details-content"></div>
+</div>
+<a href="#" onclick="showPage('policy')">View Cancellation Policy</a>
+<button class="btn btn-primary" onclick="showPage('menu')">Continue Shopping</button>
+</div>
+</div>
+
+<!-- Admin Panel Page -->
+<div id="admin" class="page">
+<div class="admin-section">
+<h2 class="section-title">Admin Panel</h2>
+<div class="form-container">
+<h3 class="form-title">Add New Product</h3>
+<div class="form-group">
+<label for="prod-name">Product Name</label>
+<input type="text" class="form-control" id="prod-name" placeholder="Enter product name">
+</div>
+<div class="form-group">
+<label for="prod-desc">Description</label>
+<input type="text" class="form-control" id="prod-desc" placeholder="Enter product description">
+</div>
+<div class="form-group">
+<label for="prod-price">Price (₹)</label>
+<input type="number" class="form-control" id="prod-price" placeholder="Enter price">
+</div>
+<div class="form-group">
+<label for="prod-image">Image URL</label>
+<input type="text" class="form-control" id="prod-image" placeholder="Enter image URL">
+</div>
+<div class="form-group">
+<label for="prod-stock">Out of Stock</label>
+<input type="checkbox" id="prod-stock">
+</div>
+<button class="btn btn-primary" onclick="addProduct()" style="width:100%">Add Product</button>
+</div>
+
+<h3 class="form-title" style="margin-top:3rem;">Manage Products</h3>
+<table class="admin-table">
+<thead>
+<tr><th>Image</th><th>Name</th><th>Description</th><th>Price</th><th>Stock</th><th>Actions</th></tr>
+</thead>
+<tbody id="admin-products"></tbody>
+</table>
+
+<h3 class="form-title" style="margin-top:3rem;">Order Management</h3>
+<table class="admin-table">
+<thead>
+<tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Update Status</th></tr>
+</thead>
+<tbody id="admin-orders"></tbody>
+</table>
+
+<h3 class="form-title" style="margin-top:3rem;">Export Data</h3>
+<div class="form-container">
+<p>Download all stored data as Excel files. Optionally, filter by date range (YYYY-MM-DD):</p>
+<div class="form-group">
+<label for="from-date">From Date</label>
+<input type="date" class="form-control" id="from-date">
+</div>
+<div class="form-group">
+<label for="to-date">To Date</label>
+<input type="date" class="form-control" id="to-date">
+</div>
+<div style="display:flex;gap:1rem;justify-content:center;margin-top:1.5rem;">
+<button class="btn btn-primary" onclick="downloadOrdersExcel()">Download Orders</button>
+<button class="btn btn-primary" onclick="downloadUsersExcel()">Download Users</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Profile Page -->
+<div id="profile" class="page">
+<div class="form-container">
+<h2 class="form-title">Edit Profile</h2>
+<form id="profile-form">
+<div class="form-group">
+<label for="profile-name">Full Name</label>
+<input type="text" class="form-control" id="profile-name" placeholder="Enter your full name">
+</div>
+<div class="form-group">
+<label for="profile-email">Email Address</label>
+<input type="email" class="form-control" id="profile-email" placeholder="Enter your email">
+</div>
+<div class="form-group">
+<label for="profile-phone">Phone Number</label>
+<input type="tel" class="form-control" id="profile-phone" placeholder="Enter your phone number">
+</div>
+<button type="button" class="btn btn-primary" onclick="saveProfile()" style="width:100%">Save Changes</button>
+</form>
+</div>
+</div>
+
+<!-- Addresses Page -->
+<div id="addresses" class="page">
+<div class="form-container">
+<h2 class="form-title">Manage Addresses</h2>
+<div id="addresses-list"></div>
+<button class="btn btn-primary" onclick="addNewAddress()" style="width:100%;margin-top:1rem">Add New Address</button>
+</div>
+
+<div class="form-container" id="address-form-container" style="display:none;margin-top:3rem;">
+<h3 class="form-title" id="address-title">Add New Address</h3>
+<form id="address-edit-form">
+<div class="form-group">
+<label for="address-full-name">Full Name</label>
+<input type="text" class="form-control" id="address-full-name" required>
+</div>
+<div class="form-group">
+<label for="address-phone">Phone Number</label>
+<input type="tel" class="form-control" id="address-phone" required>
+</div>
+<div class="form-group">
+<label for="address-state">State</label>
+<select id="address-state" class="form-control" onchange="updateProfileCities()" required>
+<option value="">Select State</option>
+</select>
+</div>
+<div class="form-group">
+<label for="address-city">City</label>
+<select id="address-city" class="form-control" required>
+<option value="">Select City</option>
+</select>
+</div>
+<div class="form-group">
+<label for="address-text">Full Address</label>
+<textarea class="form-control" id="address-text" rows="3" required></textarea>
+</div>
+<div class="form-group">
+<label for="address-pincode">Pincode</label>
+<input type="text" class="form-control" id="address-pincode" required>
+</div>
+<button type="button" class="btn btn-primary" onclick="saveAddressProfile()" style="width:100%">Save Address</button>
+</form>
+</div>
+</div>
+
+<!-- Order History Page -->
+<div id="order-history" class="page">
+<div class="admin-section">
+<h2 class="section-title">Order History</h2>
+<table class="admin-table">
+<thead>
+<tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Action</th></tr>
+</thead>
+<tbody id="order-history-body"></tbody>
+</table>
+</div>
+</div>
+
+<!-- Policy Page -->
+<div id="policy" class="page">
+<div class="form-container">
+<h2 class="form-title">Cancellation Policy</h2>
+<p>1. Orders can be cancelled within 5 minutes of placement for a full refund.</p>
+<p>2. After 5 minutes, if the order has not been accepted by the restaurant, cancellation is possible with a small fee.</p>
+<p>3. Once the order is being prepared or out for delivery, cancellation is not possible.</p>
+<p>4. Refunds for cancelled orders will be processed to the original payment method within 5-7 business days.</p>
+<p>5. For Cash on Delivery orders, no refund is applicable, but you can refuse delivery if cancelled in time.</p>
+<p>6. In case of any disputes, contact our support team at info@yaaronkazaika.com or +91 9876543210.</p>
+<button class="btn btn-primary" onclick="showPage('order-success')" style="width:100%;margin-top:1rem">Back to Order Details</button>
+</div>
+</div>
+
+<!-- Manager Page -->
+<div id="manager" class="page">
+<div class="admin-section">
+<h2 class="section-title">Manager Panel</h2>
+<h3 class="form-title">Current Orders</h3>
+<table class="admin-table">
+<thead>
+<tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Update Status</th></tr>
+</thead>
+<tbody id="manager-orders"></tbody>
+</table>
+<h3 class="form-title" style="margin-top:3rem;">Manage Stock</h3>
+<table class="admin-table">
+<thead>
+<tr><th>Image</th><th>Name</th><th>Description</th><th>Price</th><th>Stock</th><th>Actions</th></tr>
+</thead>
+<tbody id="manager-products"></tbody>
+</table>
+</div>
+</div>
+
+<!-- Order Tracking Page -->
+<div id="tracking" class="page">
+<h2 class="section-title">Order Tracking</h2>
+<div id="tracking-details"></div>
+</div>
+
+</div>
+</main>
+<footer>
+<div class="container">
+<div class="footer-content">
+<h3>Yaaron ka Zaika</h3>
+<p>Serving delicious food since 2020</p>
+<div class="social-icons">
+<a href="#"><i class="fab fa-facebook-f"></i></a>
+<a href="#"><i class="fab fa-instagram"></i></a>
+<a href="#"><i class="fab fa-twitter"></i></a>
+<a href="#"><i class="fab fa-whatsapp"></i></a>
+</div>
+<div class="contact-info">
+<p><i class="fas fa-map-marker-alt"></i> 123 Food Street, Culinary District, 110056</p>
+<p><i class="fas fa-phone"></i> +91 9876543210</p>
+<p><i class="fas fa-envelope"></i> info@yaaronkazaika.com</p>
+</div>
+<div class="copyright">
+<p>&copy; 2025 Yaaron ka Zaika. All Rights Reserved.</p>
+</div>
+</div>
+</footer>
+
+<div id="order-popup" class="order-popup" style="display:none;">
+<div class="popup-content">
+<h3>New Order Received!</h3>
+<p id="popup-order-id"></p>
+<button class="btn btn-primary" onclick="acceptOrder(popupOrderId)">Accept</button>
+<button class="btn btn-danger" onclick="rejectOrder(popupOrderId)">Reject</button>
+</div>
+</div>
+
+<script>
+// Global variables
+let currentPage = 'home';
+let cart = [];
+let selectedPayment = '';
+let user = null;
+let address = null;
+let orders = [];
+let products = [
+    { id: 1, name: 'Aloo Paratha', description: 'Spicy potato stuffed paratha served with butter and pickles', price: 50, image: 'https://images.unsplash.com/photo-1633913828181-6bb165c6d320?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 2, name: 'Paneer Paratha', description: 'Stuffed with fresh paneer cubes and spices', price: 60, image: 'https://images.unsplash.com/photo-1633913828181-6bb165c6d320?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 3, name: 'Masala Pasta', description: 'Spicy Indian style pasta with vegetables', price: 120, image: 'https://images.unsplash.com/photo-1611270629569-8b357cb3082c?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 4, name: 'Butter Chicken', description: 'Creamy and flavorful butter chicken', price: 220, image: 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 5, name: 'Vegetable Biryani', description: 'Fragrant basmati rice with mixed vegetables', price: 180, image: 'https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 6, name: 'Chole Bhature', description: 'Spicy chickpeas with fluffy fried bread', price: 90, image: 'https://images.unsplash.com/photo-1632877943287-64636ca57b7e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 7, name: 'Paneer Tikka', description: 'Grilled cottage cheese chunks with spices', price: 160, image: 'https://images.unsplash.com/photo-1606498516741-53e0d4e854df?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 8, name: 'Dal Makhani', description: 'Creamy black lentils simmered overnight', price: 150, image: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 9, name: 'Naan Bread', description: 'Traditional Indian flatbread baked in tandoor', price: 40, image: 'https://images.unsplash.com/photo-1619538187925-32e725f1e8af?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 10, name: 'Samosa', description: 'Crispy pastry filled with spiced potatoes', price: 30, image: 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 11, name: 'Palak Paneer', description: 'Cottage cheese in spinach gravy', price: 170, image: 'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 12, name: 'Veg Fried Rice', description: 'Stir fried rice with vegetables', price: 130, image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 13, name: 'Gulab Jamun', description: 'Sweet milk dumplings in sugar syrup', price: 60, image: 'https://images.unsplash.com/photo-1565694989444-3166853adfd1?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 14, name: 'Rasgulla', description: 'Soft cottage cheese balls in light syrup', price: 55, image: 'https://images.unsplash.com/photo-1625428116386-bcae7aaf6c7a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 15, name: 'Lassi', description: 'Refreshing yogurt-based drink', price: 50, image: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 16, name: 'Chicken Biryani', description: 'Fragrant rice with marinated chicken', price: 240, image: 'https://images.unsplash.com/photo-1631515242846-4d6cae5c8c2b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 17, name: 'Tandoori Chicken', description: 'Chicken marinated in yogurt and spices', price: 260, image: 'https://images.unsplash.com/photo-1603532648955-039310d9ed75?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 18, name: 'Fish Curry', description: 'Fish cooked in spicy coconut gravy', price: 280, image: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 19, name: 'Mutton Rogan Josh', description: 'Aromatic lamb curry from Kashmir', price: 320, image: 'https://images.unsplash.com/photo-1603360946369-dc9bbd814503?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 20, name: 'Prawn Masala', description: 'Prawns cooked in spicy onion-tomato gravy', price: 300, image: 'https://images.unsplash.com/photo-1559314809-0f31657403cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 21, name: 'Egg Curry', description: 'Boiled eggs in spicy gravy', price: 140, image: 'https://images.unsplash.com/photo-1558115393-ba6a698bf8a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 22, name: 'Malai Kofta', description: 'Creamy vegetable balls in rich gravy', price: 190, image: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 23, name: 'Kadai Paneer', description: 'Cottage cheese with bell peppers', price: 200, image: 'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 24, name: 'Mix Veg', description: 'Assorted vegetables in tomato gravy', price: 150, image: 'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 25, name: 'Rajma Masala', description: 'Kidney beans in spicy gravy', price: 130, image: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 26, name: 'Jeera Rice', description: 'Cumin flavored rice', price: 100, image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 27, name: 'Veg Manchurian', description: 'Vegetable balls in tangy sauce', price: 160, image: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 28, name: 'Chilli Paneer', description: 'Indo-Chinese style spicy paneer', price: 180, image: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 29, name: 'Hakka Noodles', description: 'Stir fried noodles with vegetables', price: 140, image: 'https://images.unsplash.com/photo-1585036156171-384164a8c675?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 30, name: 'Spring Rolls', description: 'Crispy rolls with vegetable filling', price: 110, image: 'https://images.unsplash.com/photo-1546549032-9571cd6b27df?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 31, name: 'Masala Dosa', description: 'Crispy rice crepe with potato filling', price: 80, image: 'https://images.unsplash.com/photo-1668236543090-a692f7c200ba?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 32, name: 'Idli Sambhar', description: 'Steamed rice cakes with lentil soup', price: 70, image: 'https://images.unsplash.com/photo-1668236542982-68882f4c8ba0?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 33, name: 'Vada Pav', description: 'Spicy potato fritter in bun', price: 40, image: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 34, name: 'Pav Bhaji', description: 'Spicy vegetable mash with buttered buns', price: 90, image: 'https://images.unsplash.com/photo-1632877943287-64636ca57b7e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 35, name: 'Mysore Pak', description: 'Chickpea flour sweet', price: 50, image: 'https://images.unsplash.com/photo-1625428116386-bcae7aaf6c7a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 36, name: 'Jalebi', description: 'Crispy sweet swirls', price: 45, image: 'https://images.unsplash.com/photo-1625428116386-bcae7aaf6c7a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 37, name: 'Kulfi', description: 'Traditional Indian ice cream', price: 60, image: 'https://images.unsplash.com/photo-1625428116386-bcae7aaf6c7a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 38, name: 'Rasmalai', description: 'Soft cheese patties in sweet milk', price: 70, image: 'https://images.unsplash.com/photo-1625428116386-bcae7aaf6c7a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 39, name: 'Chai', description: 'Spiced Indian tea', price: 20, image: 'https://images.unsplash.com/photo-1571934811356-5cc061b6821f?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 40, name: 'Cold Coffee', description: 'Iced coffee with ice cream', price: 120, image: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 41, name: 'Mango Shake', description: 'Refreshing mango drink', price: 100, image: 'https://images.unsplash.com/photo-1568700942090-19b5e7d970e3?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 42, name: 'Fresh Lime Soda', description: 'Sweet or salty lime drink', price: 50, image: 'https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 43, name: 'Mojito', description: 'Mint lime mocktail', price: 110, image: 'https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 44, name: 'Fruit Salad', description: 'Assorted fresh fruits', price: 90, image: 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 45, name: 'Fruit Cream', description: 'Fresh fruits with sweet cream', price: 130, image: 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 46, name: 'Gajar Ka Halwa', description: 'Carrot pudding with nuts', price: 80, image: 'https://images.unsplash.com/photo-1625428116386-bcae7aaf6c7a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 47, name: 'Rabri', description: 'Sweet condensed milk dish', price: 70, image: 'https://images.unsplash.com/photo-1625428116386-bcae7aaf6c7a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 48, name: 'Kheer', description: 'Rice pudding with nuts', price: 60, image: 'https://images.unsplash.com/photo-1625428116386-bcae7aaf6c7a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 49, name: 'Besan Ladoo', description: 'Chickpea flour sweet balls', price: 55, image: 'https://images.unsplash.com/photo-1625428116386-bcae7aaf6c7a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false },
+    { id: 50, name: 'Pani Puri', description: 'Crispy puris with tangy water', price: 40, image: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80', isOutOfStock: false }
+];
+
+const indianStates = [
+    'Andaman and Nicobar Islands', 'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chandigarh', 'Chhattisgarh', 'Dadra and Nagar Haveli and Daman and Diu', 'Delhi', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jammu and Kashmir', 'Jharkhand', 'Karnataka', 'Kerala', 'Ladakh', 'Lakshadweep', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Puducherry', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal'
+];
+
+const stateCities = {
+    "Andaman and Nicobar Islands": [],
+    "Andhra Pradesh": ["Adoni", "Amaravathi", "Anantapur", "Bhimavaram", "Chittoor", "Eluru", "Guntur", "Kadapa", "Kakinada", "Kurnool", "Machilipatnam", "Nandyal", "Nellore", "Ongole", "Rajahmundry", "Tadepalligudem", "Tenali", "Tirupati", "Vijayawada", "Visakhapatnam", "Vizianagaram"],
+    "Arunachal Pradesh": [],
+    "Assam": ["Dibrugarh", "Guwahati", "Jorhat", "Nagaon", "Silchar", "Tezpur", "Tinsukia"],
+    "Bihar": ["Arrah", "Aurangabad", "Begusarai", "Bhagalpur", "Bihar Sharif", "Buxar", "Chapra", "Darbhanga", "Dehri", "Gaya", "Hajipur", "Jehanabad", "Katihar", "Munger", "Muzaffarpur", "Patna", "Purnia", "Saharsa", "Sasaram", "Siwan"],
+    "Chandigarh": ["Chandigarh"],
+    "Chhattisgarh": ["Bhilai", "Bilaspur", "Korba", "Raipur"],
+    "Dadra and Nagar Haveli and Daman and Diu": [],
+    "Delhi": ["New Delhi"],
+    "Goa": [],
+    "Gujarat": ["Ahmedabad", "Bhavnagar", "Gandhidham", "Jamnagar", "Junagadh", "Rajkot", "Surat", "Vadodara"],
+    "Haryana": ["Bahadurgarh", "Faridabad", "Gurgaon", "Hisar", "Karnal", "Panipat", "Rohtak", "Sonipat"],
+    "Himachal Pradesh": [],
+    "Jammu and Kashmir": [],
+    "Jharkhand": ["Bokaro Steel City", "Dhanbad", "Giridih", "Hazaribagh", "Jamshedpur", "Ranchi"],
+    "Karnataka": ["Bangalore", "Belgaum", "Bellary", "Bijapur", "Davanagere", "Gulbarga", "Hubballi-Dharwad", "Mangalore", "Mysore", "Shimoga", "Tumkur"],
+    "Kerala": ["Kochi", "Kollam", "Kozhikode", "Thrissur", "Thiruvananthapuram"],
+    "Ladakh": [],
+    "Lakshadweep": [],
+    "Madhya Pradesh": ["Bhopal", "Dewas", "Gwalior", "Indore", "Jabalpur", "Ratlam", "Sagar", "Ujjain"],
+    "Maharashtra": ["Ahmednagar", "Akola", "Amravati", "Aurangabad", "Bhiwandi", "Chandrapur", "Dhule", "Ichalkaranji", "Jalgaon", "Jalna", "Kalyan-Dombivali", "Kolhapur", "Latur", "Malegaon", "Mira-Bhayandar", "Mumbai", "Nagpur", "Nanded", "Nashik", "Navi Mumbai", "Pimpri-Chinchwad"],
+    "Manipur": [],
+    "Meghalaya": [],
+    "Mizoram": [],
+    "Nagaland": [],
+    "Odisha": ["Bhubaneswar", "Cuttack", "Rourkela"],
+    "Puducherry": [],
+    "Punjab": ["Amritsar", "Bathinda", "Jalandhar", "Ludhiana", "Patiala"],
+    "Rajasthan": ["Ajmer", "Alwar", "Bharatpur", "Bhilwara", "Bikaner", "Jaipur", "Jodhpur", "Kota", "Pali", "Sikar", "Sri Ganganagar", "Udaipur"],
+    "Sikkim": [],
+    "Tamil Nadu": ["Avadi", "Chennai", "Coimbatore", "Madurai", "Salem", "Thoothukudi", "Tiruchirappalli", "Tirunelveli", "Tiruppur", "Vellore"],
+    "Telangana": ["Hyderabad", "Karimnagar", "Khammam", "Mahbubnagar", "Nizamabad", "Ramagundam", "Warangal"],
+    "Tripura": [],
+    "Uttar Pradesh": ["Agra", "Aligarh", "Allahabad", "Bareilly", "Firozabad", "Ghaziabad", "Gorakhpur", "Jhansi", "Kanpur", "Loni", "Lucknow", "Mathura", "Meerut", "Moradabad", "Muzaffarnagar", "Noida", "Rampur", "Saharanpur", "Shahjahanpur", "Varanasi"],
+    "Uttarakhand": ["Dehradun", "Haridwar"],
+    "West Bengal": ["Asansol", "Bardhaman", "Durgapur", "Howrah", "Kharagpur", "Kolkata", "Siliguri"]
+};
+
+let popupOrderId = null;
+let lastOrderCount = 0;
+let currentAddressId = null;
+
+// Initialize the application
+function initApp() {
+    const savedProducts = localStorage.getItem('products');
+    if (savedProducts) {
+        products = JSON.parse(savedProducts);
+    } else {
+        localStorage.setItem('products', JSON.stringify(products));
+    }
+
+    renderProducts();
+    renderFeaturedProducts();
+    updateCartCount();
+    populateStates();
+    
+    // Load user data if exists
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+        user = JSON.parse(savedUser);
+        updateAuthButton();
+    }
+    
+    // Load orders if exists
+    const savedOrders = localStorage.getItem('orders');
+    if (savedOrders) {
+        orders = JSON.parse(savedOrders);
+    }
+
+    // Check for pending orders if manager
+    if (user && user.role === 'manager') {
+        lastOrderCount = orders.length;
+        setInterval(checkNewOrders, 5000); // Poll for new orders
+    }
+}
+
+// Populate states
+function populateStates() {
+  const statesSelects = [document.getElementById('state'), document.getElementById('address-state')];
+  statesSelects.forEach(select => {
+    if (select) {
+      select.innerHTML = '<option value="">Select State</option>';
+      indianStates.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s;
+        opt.text = s;
+        select.appendChild(opt);
+      });
+    }
+  });
+}
+
+// Update cities for checkout
+function updateCities() {
+  const state = document.getElementById('state').value;
+  const citySelect = document.getElementById('city');
+  citySelect.innerHTML = '<option value="">Select City</option>';
+  if (stateCities[state]) {
+    stateCities[state].forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.text = c;
+      citySelect.appendChild(opt);
+    });
+  }
+}
+
+// Update cities for profile
+function updateProfileCities() {
+  const state = document.getElementById('address-state').value;
+  const citySelect = document.getElementById('address-city');
+  citySelect.innerHTML = '<option value="">Select City</option>';
+  if (stateCities[state]) {
+    stateCities[state].forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.text = c;
+      citySelect.appendChild(opt);
+    });
+  }
+}
+
+// Use current location
+function useCurrentLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      showNotification(`Location: Lat ${pos.coords.latitude}, Lon ${pos.coords.longitude}. Please fill address manually.`);
+    }, err => {
+      showNotification('Geolocation error: ' + err.message, 'error');
+    });
+  } else {
+    showNotification('Geolocation not supported', 'error');
+  }
+}
+
+// Toggle dropdown
+function toggleDropdown() {
+  const content = document.getElementById('dropdown-content');
+  content.style.display = content.style.display === 'block' ? 'none' : 'block';
+}
+
+// Update authentication button
+function updateAuthButton() {
+  const authBtn = document.getElementById('auth-btn');
+  const dropdown = document.getElementById('dropdown-content');
+  dropdown.innerHTML = '';
+  if (user) {
+    let text = user.name;
+    if (user.role === 'admin') text = 'Admin';
+    if (user.role === 'manager') text = 'Manager';
+    authBtn.innerHTML = `<i class="fas fa-user"></i> ${text}`;
+    authBtn.onclick = toggleDropdown;
+    if (user.role === 'admin') {
+      dropdown.innerHTML += '<a href="#" onclick="showPage(\'admin\'); toggleDropdown()">Admin Panel</a>';
+      dropdown.innerHTML += '<a href="#" onclick="downloadOrdersExcel(); toggleDropdown()">Export Orders</a>';
+      dropdown.innerHTML += '<a href="#" onclick="downloadUsersExcel(); toggleDropdown()">Export Users</a>';
+      dropdown.innerHTML += '<a href="#" onclick="userLogout(); toggleDropdown()">Logout</a>';
+    } else if (user.role === 'manager') {
+      dropdown.innerHTML += '<a href="#" onclick="showPage(\'manager\'); toggleDropdown()">Manager Panel</a>';
+      dropdown.innerHTML += '<a href="#" onclick="userLogout(); toggleDropdown()">Logout</a>';
+    } else {
+      dropdown.innerHTML += '<a href="#" onclick="showPage(\'profile\'); toggleDropdown()">Edit Profile</a>';
+      dropdown.innerHTML += '<a href="#" onclick="showPage(\'addresses\'); toggleDropdown()">Manage Addresses</a>';
+      dropdown.innerHTML += '<a href="#" onclick="showPage(\'order-history\'); toggleDropdown()">Order History</a>';
+      dropdown.innerHTML += '<a href="#" onclick="userLogout(); toggleDropdown()">Logout</a>';
+    }
+  } else {
+    authBtn.innerHTML = '<i class="fas fa-user"></i> Login';
+    authBtn.onclick = () => { showPage('login'); };
+  }
+}
+
+// Show page function
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(page).classList.add('active');
+  currentPage = page;
+  
+  if (page === 'menu') {
+    renderProducts();
+  } else if (page === 'cart') {
+    if (cart.length === 0) {
+      showNotification('Your cart is empty! Redirecting to menu...');
+      setTimeout(() => showPage('menu'), 1500);
+      return;
+    }
+    renderCart();
+  } else if (page === 'admin') {
+    if (!user || user.role !== 'admin') {
+      showPage('login');
+      showNotification('Please login as admin first', 'error');
+      return;
+    }
+    renderAdminProducts();
+    renderAdminOrders();
+  } else if (page === 'manager') {
+    if (!user || user.role !== 'manager') {
+      showPage('login');
+      showNotification('Please login as manager first', 'error');
+      return;
+    }
+    renderManagerOrders();
+    renderManagerProducts();
+  } else if (page === 'profile') {
+    if (!user || user.role !== 'user') {
+      showPage('home');
+      showNotification('Access denied', 'error');
+      return;
+    }
+    renderProfile();
+  } else if (page === 'order-history') {
+    renderOrderHistory();
+  }
+}
+
+// Show notification
+function showNotification(msg, type = 'success') {
+  const notif = document.getElementById('notification');
+  notif.innerText = msg;
+  notif.className = 'notification show ' + (type === 'error' ? 'error' : '');
+  setTimeout(() => { notif.className = 'notification'; }, 3000);
+}
+
+// Render products
+function renderProducts() {
+  const container = document.getElementById('products-container');
+  container.innerHTML = '';
+  
+  products.forEach(prod => {
+    const cartItem = cart.find(item => item.id === prod.id);
+    const quantity = cartItem ? cartItem.quantity : 0;
+    
+    const card = document.createElement('div');
+    card.className = 'product-card fade-in';
+    card.innerHTML = `
+      <img src="${prod.image}" class="product-image" alt="${prod.name}">
+      <div class="product-info">
+        <h3 class="product-title">${prod.name}</h3>
+        <p class="product-description">${prod.description}</p>
+        <div class="product-price">₹${prod.price}</div>
+        <div class="product-actions">
+          ${prod.isOutOfStock ? '<p style="color: red;">Out of Stock</p>' : (quantity === 0 ? 
+            `<button class="add-to-cart-btn" onclick="addToCart(${prod.id})">Add to Cart</button>` : 
+            `<div class="quantity-controls">
+              <button class="quantity-btn" onclick="changeQuantity(${prod.id}, -1)">-</button>
+              <div class="quantity-display" id="qty-${prod.id}">${quantity}</div>
+              <button class="quantity-btn" onclick="changeQuantity(${prod.id}, 1)">+</button>
+            </div>
+            <button class="add-to-cart-btn" onclick="showPage('cart')">Go to Cart</button>
+            <button class="order-now-btn" onclick="orderNow()">Order Now</button>`
+          )}
+        </div>
+      </div>`;
+    container.appendChild(card);
+  });
+}
+
+// Order now function
+function orderNow() {
+  showPage('cart');
+  checkout();
+}
+
+// Render featured products
+function renderFeaturedProducts() {
+  const container = document.getElementById('featured-products');
+  container.innerHTML = '';
+  
+  // Get 6 random featured products
+  const featuredProducts = [...products].sort(() => 0.5 - Math.random()).slice(0, 6);
+  
+  featuredProducts.forEach(prod => {
+    const card = document.createElement('div');
+    card.className = 'product-card fade-in';
+    card.innerHTML = `
+      <img src="${prod.image}" class="product-image" alt="${prod.name}">
+      <div class="product-info">
+        <h3 class="product-title">${prod.name}</h3>
+        <p class="product-description">${prod.description}</p>
+        <div class="product-price">₹${prod.price}</div>
+        ${prod.isOutOfStock ? '<p style="color: red;">Out of Stock</p>' : `<button class="add-to-cart-btn" onclick="addToCart(${prod.id}); showPage('menu')">Add to Cart</button>`}
+      </div>`;
+    container.appendChild(card);
+  });
+}
+
+// Add to cart
+function addToCart(id) {
+  const product = products.find(p => p.id === id);
+  if (product.isOutOfStock) {
+    showNotification('Product is out of stock', 'error');
+    return;
+  }
+  const existingItem = cart.find(item => item.id === id);
+  
+  if (existingItem) {
+    existingItem.quantity += 1;
+  } else {
+    cart.push({...product, quantity: 1});
+  }
+  
+  updateCartCount();
+  renderProducts();
+  showNotification(`${product.name} added to cart!`);
+}
+
+// Change quantity
+function changeQuantity(id, delta) {
+  const item = cart.find(item => item.id === id);
+  
+  if (item) {
+    item.quantity += delta;
+    
+    if (item.quantity <= 0) {
+      cart = cart.filter(item => item.id !== id);
+      showNotification('Item removed from cart');
+    }
+    
+    updateCartCount();
+    renderProducts();
+    renderCart();
+  }
+}
+
+// Update cart count
+function updateCartCount() {
+  document.getElementById('cart-count').innerText = cart.reduce((acc, item) => acc + item.quantity, 0);
+}
+
+// Render cart
+function renderCart() {
+  const cartDiv = document.getElementById('cart-items');
+  cartDiv.innerHTML = '';
+  
+  if (cart.length === 0) {
+    cartDiv.innerHTML = `
+      <div class="text-center" style="padding: 3rem;">
+        <i class="fas fa-shopping-cart" style="font-size: 4rem; color: #ccc; margin-bottom: 1.5rem;"></i>
+        <h3 style="color: #777;">Your cart is empty</h3>
+        <p style="margin-bottom: 1.5rem;">Add some delicious food to get started!</p>
+        <button class="btn btn-primary" onclick="showPage('menu')">Browse Menu</button>
+      </div>`;
+    document.getElementById('cart-total').innerText = 'Total: ₹0';
+    document.getElementById('checkout-section').style.display = 'none';
+    return;
+  }
+  
+  cart.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'cart-item fade-in';
+    div.innerHTML = `
+      <img src="${item.image}" class="cart-item-image" alt="${item.name}">
+      <div class="cart-item-info">
+        <h4 class="cart-item-title">${item.name}</h4>
+        <p class="cart-item-desc">${item.description}</p>
+        <p class="cart-item-price">₹${item.price} x ${item.quantity} = ₹${item.price * item.quantity}</p>
+      </div>
+      <div class="quantity-controls">
+        <button class="quantity-btn" onclick="changeQuantity(${item.id}, -1)">-</button>
+        <div class="quantity-display">${item.quantity}</div>
+        <button class="quantity-btn" onclick="changeQuantity(${item.id}, 1)">+</button>
+      </div>`;
+    cartDiv.appendChild(div);
+  });
+  
+  const total = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+  document.getElementById('cart-total').innerText = `Total: ₹${total}`;
+  document.getElementById('checkout-section').style.display = 'block';
+  document.getElementById('payment-section').style.display = 'none';
+}
+
+// Checkout function
+function checkout() {
+  if (cart.length === 0) {
+    showNotification('Your cart is empty!', 'error');
+    return;
+  }
+  
+  // Check if user is logged in
+  if (!user) {
+    showNotification('Please login to continue checkout', 'error');
+    showPage('login');
+    return;
+  }
+  
+  renderAddressOptions();
+  loadAddress(); // set to new by default
+  showNotification('Please select or fill your delivery address');
+  document.getElementById('checkout-section').style.display = 'block';
+}
+
+// Render address options
+function renderAddressOptions() {
+  const select = document.getElementById('address-select');
+  select.innerHTML = '<option value="new">Add New Address</option>';
+  if (user.savedAddresses) {
+    user.savedAddresses.forEach(addr => {
+      const opt = document.createElement('option');
+      opt.value = addr.id;
+      opt.text = `${addr.fullName} - ${addr.city}`;
+      select.appendChild(opt);
+    });
+  }
+}
+
+// Load address based on selection
+function loadAddress() {
+  const select = document.getElementById('address-select');
+  const id = select.value;
+  if (id === 'new') {
+    document.getElementById('full-name').value = '';
+    document.getElementById('phone').value = '';
+    document.getElementById('state').value = '';
+    document.getElementById('city').value = '';
+    document.getElementById('address').value = '';
+    document.getElementById('pincode').value = '';
+  } else {
+    const addr = user.savedAddresses.find(a => a.id == id);
+    if (addr) {
+      document.getElementById('full-name').value = addr.fullName;
+      document.getElementById('phone').value = addr.phone;
+      document.getElementById('state').value = addr.state || '';
+      updateCities();
+      document.getElementById('city').value = addr.city;
+      document.getElementById('address').value = addr.address;
+      document.getElementById('pincode').value = addr.pincode;
+    }
+  }
+}
+
+// Save address in checkout
+function saveAddress() {
+  const fullName = document.getElementById('full-name').value;
+  const phone = document.getElementById('phone').value;
+  const state = document.getElementById('state').value;
+  const city = document.getElementById('city').value;
+  const addressText = document.getElementById('address').value;
+  const pincode = document.getElementById('pincode').value;
+  
+  if (!fullName || !phone || !state || !city || !addressText || !pincode) {
+    showNotification('Please fill all address fields', 'error');
+    return;
+  }
+  
+  const select = document.getElementById('address-select');
+  const isNew = select.value === 'new';
+  const addrId = isNew ? Date.now() : select.value;
+  
+  const newAddr = {
+    id: addrId,
+    fullName,
+    phone,
+    state,
+    city,
+    address: addressText,
+    pincode
+  };
+  
+  if (!user.savedAddresses) user.savedAddresses = [];
+  if (isNew) {
+    user.savedAddresses.push(newAddr);
+  } else {
+    const index = user.savedAddresses.findIndex(a => a.id == addrId);
+    if (index !== -1) user.savedAddresses[index] = newAddr;
+  }
+  
+  updateUserInStorage();
+  
+  address = newAddr;
+  document.getElementById('payment-section').style.display = 'block';
+  showNotification('Address saved successfully');
+}
+
+// Select payment method
+function selectPayment(method) {
+  selectedPayment = method;
+  document.querySelectorAll('.payment-option').forEach(opt => opt.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  
+  // Show QR upload section for UPI payment
+  if (method === 'upi') {
+    document.getElementById('qr-upload').style.display = 'block';
+  } else {
+    document.getElementById('qr-upload').style.display = 'none';
+  }
+}
+
+// Preview uploaded image
+function previewImage(input) {
+  const preview = document.getElementById('preview');
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+    }
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+// Place order
+function placeOrder() {
+  if (!selectedPayment) {
+    showNotification('Please select a payment method', 'error');
+    return;
+  }
+  
+  if (selectedPayment === 'upi' && !document.getElementById('payment-screenshot').files[0]) {
+    showNotification('Please upload payment screenshot for UPI payment', 'error');
+    return;
+  }
+  
+  if (cart.length === 0) {
+    showNotification('Your cart is empty!', 'error');
+    return;
+  }
+  
+  if (!address) {
+    showNotification('Please fill your delivery address', 'error');
+    return;
+  }
+  
+  const total = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+  const order = {
+    id: Date.now(),
+    date: new Date().toLocaleString(),
+    items: [...cart],
+    total,
+    address: {...address},
+    paymentMethod: selectedPayment,
+    status: 'Pending',
+    userEmail: user.email
+  };
+  
+  // Add to orders
+  orders.push(order);
+  localStorage.setItem('orders', JSON.stringify(orders));
+  
+  // Show order success page
+  showOrderSuccess(order);
+  
+  // Clear cart
+  cart = [];
+  updateCartCount();
+  selectedPayment = '';
+  address = null;
+  
+  // Reset forms
+  document.getElementById('address-select').value = 'new';
+  loadAddress();
+  document.querySelectorAll('.payment-option').forEach(opt => opt.classList.remove('selected'));
+  document.getElementById('qr-upload').style.display = 'none';
+  document.getElementById('preview').style.display = 'none';
+  document.getElementById('payment-screenshot').value = '';
+}
+
+// Show order success page
+function showOrderSuccess(order) {
+  const orderDetails = document.getElementById('order-details-content');
+  orderDetails.innerHTML = `
+    <div class="order-details-row">
+      <strong>Order ID:</strong>
+      <span>#${order.id}</span>
+    </div>
+    <div class="order-details-row">
+      <strong>Order Date:</strong>
+      <span>${order.date}</span>
+    </div>
+    <div class="order-details-row">
+      <strong>Delivery Address:</strong>
+      <span>${order.address.address}, ${order.address.city}, ${order.address.pincode}</span>
+    </div>
+    <div class="order-details-row">
+      <strong>Contact:</strong>
+      <span>${order.address.phone}</span>
+    </div>
+    <div class="order-details-row">
+      <strong>Payment Method:</strong>
+      <span>${order.paymentMethod.toUpperCase()}</span>
+    </div>
+    <div class="order-details-row">
+      <strong>Total Amount:</strong>
+      <span>₹${order.total}</span>
+    </div>
+  `;
+  
+  showPage('order-success');
+}
+
+// Update user in storage
+function updateUserInStorage() {
+  localStorage.setItem('user', JSON.stringify(user));
+  const users = JSON.parse(localStorage.getItem('users') || '[]');
+  const index = users.findIndex(u => u.email === user.email);
+  if (index !== -1) {
+    users[index] = user;
+    localStorage.setItem('users', JSON.stringify(users));
+  }
+}
+
+// Render profile
+function renderProfile() {
+  document.getElementById('profile-name').value = user.name;
+  document.getElementById('profile-email').value = user.email;
+  document.getElementById('profile-phone').value = user.phone || '';
+  renderAddressesList();
+}
+
+// Save profile
+function saveProfile() {
+  const name = document.getElementById('profile-name').value;
+  const email = document.getElementById('profile-email').value;
+  const phone = document.getElementById('profile-phone').value;
+  
+  if (!name || !email || !phone) {
+    showNotification('Please fill all fields', 'error');
+    return;
+  }
+  
+  if (email !== user.email) {
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    if (users.find(u => u.email === email)) {
+      showNotification('Email already exists', 'error');
+      return;
+    }
+  }
+  
+  user.name = name;
+  user.email = email;
+  user.phone = phone;
+  updateUserInStorage();
+  updateAuthButton();
+  showNotification('Profile updated successfully');
+}
+
+// Render addresses list in profile
+function renderAddressesList() {
+  const list = document.getElementById('addresses-list');
+  list.innerHTML = '';
+  if (user.savedAddresses) {
+    user.savedAddresses.forEach(addr => {
+      const div = document.createElement('div');
+      div.style = 'background:white; padding:1rem; margin-bottom:1rem; border-radius:10px; box-shadow: var(--card-shadow);';
+      div.innerHTML = `
+        <p><strong>${addr.fullName}</strong></p>
+        <p>${addr.address}, ${addr.city}, ${addr.pincode}</p>
+        <p>Phone: ${addr.phone}</p>
+        <button class="btn btn-primary" onclick="editAddressProfile(${addr.id})">Edit</button>
+        <button class="btn btn-danger" onclick="deleteAddressProfile(${addr.id})" style="margin-left:1rem">Delete</button>
+      `;
+      list.appendChild(div);
+    });
+  }
+}
+
+// Add new address in profile
+function addNewAddress() {
+  document.getElementById('address-title').innerText = 'Add New Address';
+  document.getElementById('address-full-name').value = '';
+  document.getElementById('address-phone').value = '';
+  document.getElementById('address-state').value = '';
+  document.getElementById('address-city').value = '';
+  document.getElementById('address-text').value = '';
+  document.getElementById('address-pincode').value = '';
+  document.getElementById('address-form-container').style.display = 'block';
+  currentAddressId = null;
+}
+
+// Edit address in profile
+function editAddressProfile(id) {
+  const addr = user.savedAddresses.find(a => a.id == id);
+  if (addr) {
+    document.getElementById('address-title').innerText = 'Edit Address';
+    document.getElementById('address-full-name').value = addr.fullName;
+    document.getElementById('address-phone').value = addr.phone;
+    document.getElementById('address-state').value = addr.state || '';
+    updateProfileCities();
+    document.getElementById('address-city').value = addr.city;
+    document.getElementById('address-text').value = addr.address;
+    document.getElementById('address-pincode').value = addr.pincode;
+    document.getElementById('address-form-container').style.display = 'block';
+    currentAddressId = id;
+  }
+}
+
+// Save address in profile
+function saveAddressProfile() {
+  const fullName = document.getElementById('address-full-name').value;
+  const phone = document.getElementById('address-phone').value;
+  const state = document.getElementById('address-state').value;
+  const city = document.getElementById('address-city').value;
+  const addressText = document.getElementById('address-text').value;
+  const pincode = document.getElementById('address-pincode').value;
+  
+  if (!fullName || !phone || !state || !city || !addressText || !pincode) {
+    showNotification('Please fill all fields', 'error');
+    return;
+  }
+  
+  const addrId = currentAddressId || Date.now();
+  const newAddr = {
+    id: addrId,
+    fullName,
+    phone,
+    state,
+    city,
+    address: addressText,
+    pincode
+  };
+  
+  if (currentAddressId) {
+    const index = user.savedAddresses.findIndex(a => a.id == currentAddressId);
+    if (index !== -1) user.savedAddresses[index] = newAddr;
+  } else {
+    user.savedAddresses.push(newAddr);
+  }
+  
+  updateUserInStorage();
+  document.getElementById('address-form-container').style.display = 'none';
+  renderAddressesList();
+  showNotification('Address saved successfully');
+}
+
+// Delete address in profile
+function deleteAddressProfile(id) {
+  if (confirm('Are you sure you want to delete this address?')) {
+    user.savedAddresses = user.savedAddresses.filter(a => a.id != id);
+    updateUserInStorage();
+    renderAddressesList();
+    showNotification('Address deleted');
+  }
+}
+
+// Render order history for user
+function renderOrderHistory() {
+  const tbody = document.getElementById('order-history-body');
+  tbody.innerHTML = '';
+  const userOrders = orders.filter(o => o.userEmail === user.email);
+  if (userOrders.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No orders yet</td></tr>';
+    return;
+  }
+  userOrders.forEach(order => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>#${order.id}</td>
+      <td>${order.address.fullName}</td>
+      <td>${order.items.map(i => i.name).join(', ')}</td>
+      <td>₹${order.total}</td>
+      <td>${order.status}</td>
+      <td><button class="btn btn-primary" onclick="trackOrder(${order.id})">Track</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// Track order
+function trackOrder(id) {
+  const order = orders.find(o => o.id === id);
+  if (order) {
+    document.getElementById('tracking-details').innerHTML = `
+      <p>Order ID: #${order.id}</p>
+      <p>Status: ${order.status}</p>
+      <p>Delivery Address: ${order.address.address}, ${order.address.city}, ${order.address.pincode}</p>
+      <p>Estimated Delivery: 30-45 minutes (if pending or confirmed)</p>
+    `;
+    showPage('tracking');
+  }
+}
+
+// Helper function to download Excel file
+function downloadExcel(workbook, filename) {
+  const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'binary' });
+  function s2ab(s) {
+    const buf = new ArrayBuffer(s.length);
+    const view = new Uint8Array(buf);
+    for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+    return buf;
+  }
+  const blob = new Blob([s2ab(wbout)], { type: "application/octet-stream" });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+}
+
+// Download orders Excel from admin panel
+function downloadOrdersExcel() {
+  if (!user || user.role !== 'admin') {
+    showNotification('Access denied. Admin login required.', 'error');
+    showPage('login');
+    return;
+  }
+  
+  const fromDateStr = document.getElementById('from-date').value;
+  const toDateStr = document.getElementById('to-date').value;
+  
+  let filteredOrders = orders;
+  
+  if (fromDateStr) {
+    const fromDate = new Date(fromDateStr);
+    filteredOrders = filteredOrders.filter(o => new Date(o.date) >= fromDate);
+  }
+  
+  if (toDateStr) {
+    const toDate = new Date(toDateStr);
+    toDate.setHours(23, 59, 59, 999);
+    filteredOrders = filteredOrders.filter(o => new Date(o.date) <= toDate);
+  }
+  
+  if (filteredOrders.length === 0) {
+    showNotification('No orders in the selected date range', 'error');
+    return;
+  }
+  
+  const orderData = filteredOrders.map(order => ({
+    OrderID: order.id,
+    Date: order.date,
+    CustomerName: order.address.fullName,
+    Phone: order.address.phone,
+    Address: `${order.address.address}, ${order.address.city}, ${order.address.pincode}`,
+    PaymentMethod: order.paymentMethod.toUpperCase(),
+    Total: order.total,
+    Status: order.status,
+    Items: order.items.map(item => `${item.name} (Qty: ${item.quantity})`).join(', ')
+  }));
+  
+  const workbook = XLSX.utils.book_new();
+  const worksheet = XLSX.utils.json_to_sheet(orderData);
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Orders');
+  
+  downloadExcel(workbook, 'YaaronKaZaika_Orders.xlsx');
+  showNotification('Orders Excel file downloaded successfully');
+}
+
+// Download users Excel from admin panel
+function downloadUsersExcel() {
+  if (!user || user.role !== 'admin') {
+    showNotification('Access denied. Admin login required.', 'error');
+    showPage('login');
+    return;
+  }
+  
+  const fromDateStr = document.getElementById('from-date').value;
+  const toDateStr = document.getElementById('to-date').value;
+  
+  let filteredUsers = JSON.parse(localStorage.getItem('users') || '[]');
+  
+  if (fromDateStr) {
+    const fromDate = new Date(fromDateStr);
+    filteredUsers = filteredUsers.filter(u => new Date(u.signupDate) >= fromDate);
+  }
+  
+  if (toDateStr) {
+    const toDate = new Date(toDateStr);
+    toDate.setHours(23, 59, 59, 999);
+    filteredUsers = filteredUsers.filter(u => new Date(u.signupDate) <= toDate);
+  }
+  
+  if (filteredUsers.length === 0) {
+    showNotification('No users in the selected date range', 'error');
+    return;
+  }
+  
+  const userData = filteredUsers.map(user => ({
+    Name: user.name,
+    Email: user.email,
+    Phone: user.phone,
+    SignupDate: user.signupDate
+  }));
+  
+  const workbook = XLSX.utils.book_new();
+  const worksheet = XLSX.utils.json_to_sheet(userData);
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Users');
+  
+  downloadExcel(workbook, 'YaaronKaZaika_Users.xlsx');
+  showNotification('Users Excel file downloaded successfully');
+}
+
+// User login
+function userLogin() {
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
+  
+  if (!email || !password) {
+    showNotification('Please fill all fields', 'error');
+    return;
+  }
+  
+  // Check if admin login
+  if (email === 'admin@yaaronkazaika.com' && password === 'Pundhir@123') {
+    user = { name: 'Admin', email: 'admin@yaaronkazaika.com', role: 'admin' };
+    localStorage.setItem('user', JSON.stringify(user));
+    updateAuthButton();
+    showPage('admin');
+    showNotification('Admin login successful');
+    return;
+  }
+  
+  // Check if manager login
+  if (email === 'manager@yaaronkazaika.com' && password === 'manager123') {
+    user = { name: 'Manager', email: 'manager@yaaronkazaika.com', role: 'manager' };
+    localStorage.setItem('user', JSON.stringify(user));
+    updateAuthButton();
+    showPage('manager');
+    showNotification('Manager login successful');
+    lastOrderCount = orders.length;
+    return;
+  }
+  
+  // Check if user exists
+  const users = JSON.parse(localStorage.getItem('users') || '[]');
+  const foundUser = users.find(u => u.email === email && u.password === password);
+  
+  if (foundUser) {
+    user = foundUser;
+    user.role = 'user';
+    if (!user.savedAddresses) user.savedAddresses = [];
+    localStorage.setItem('user', JSON.stringify(user));
+    updateUserInStorage();
+    updateAuthButton();
+    showNotification('Login successful');
+    
+    // Return to cart if user was trying to checkout
+    if (cart.length > 0) {
+      showPage('cart');
+    } else {
+      showPage('home');
+    }
+  } else {
+    showNotification('Invalid email or password', 'error');
+  }
+}
+
+// User signup
+function userSignup() {
+  const name = document.getElementById('signup-name').value;
+  const email = document.getElementById('signup-email').value;
+  const phone = document.getElementById('signup-phone').value;
+  const password = document.getElementById('signup-password').value;
+  const confirm = document.getElementById('signup-confirm').value;
+  
+  if (!name || !email || !phone || !password || !confirm) {
+    showNotification('Please fill all fields', 'error');
+    return;
+  }
+  
+  if (password !== confirm) {
+    showNotification('Passwords do not match', 'error');
+    return;
+  }
+  
+  const users = JSON.parse(localStorage.getItem('users') || '[]');
+  
+  // Check if user already exists
+  if (users.find(u => u.email === email)) {
+    showNotification('User with this email already exists', 'error');
+    return;
+  }
+  
+  // Add new user
+  const newUser = { name, email, phone, password, signupDate: new Date().toLocaleString(), savedAddresses: [], role: 'user' };
+  users.push(newUser);
+  localStorage.setItem('users', JSON.stringify(users));
+  
+  // Auto login
+  user = newUser;
+  localStorage.setItem('user', JSON.stringify(user));
+  updateAuthButton();
+  
+  showNotification('Account created successfully!');
+  showPage('menu');
+}
+
+// User logout
+function userLogout() {
+  user = null;
+  localStorage.removeItem('user');
+  updateAuthButton();
+  showNotification('Logged out successfully');
+  showPage('home');
+}
+
+// Add product (admin)
+function addProduct() {
+  const name = document.getElementById('prod-name').value;
+  const desc = document.getElementById('prod-desc').value;
+  const price = parseInt(document.getElementById('prod-price').value);
+  const image = document.getElementById('prod-image').value;
+  const isOutOfStock = document.getElementById('prod-stock').checked;
+  
+  if (!name || !desc || !price || !image) {
+    showNotification('Please fill all fields', 'error');
+    return;
+  }
+  
+  const newProd = {
+    id: products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1,
+    name,
+    description: desc,
+    price,
+    image,
+    isOutOfStock
+  };
+  
+  products.push(newProd);
+  localStorage.setItem('products', JSON.stringify(products));
+  showNotification('Product added successfully');
+  
+  // Clear form
+  document.getElementById('prod-name').value = '';
+  document.getElementById('prod-desc').value = '';
+  document.getElementById('prod-price').value = '';
+  document.getElementById('prod-image').value = '';
+  document.getElementById('prod-stock').checked = false;
+  
+  renderProducts();
+  renderAdminProducts();
+}
+
+// Render admin products
+function renderAdminProducts() {
+  const tbody = document.getElementById('admin-products');
+  tbody.innerHTML = '';
+  
+  products.forEach(p => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><img src="${p.image}" alt="${p.name}"></td>
+      <td>${p.name}</td>
+      <td>${p.description}</td>
+      <td><input type="number" value="${p.price}" onchange="updatePrice(${p.id}, this.value)"></td>
+      <td>${p.isOutOfStock ? 'Out' : 'In'}</td>
+      <td>
+        <button class="btn btn-primary" onclick="toggleStock(${p.id})">Toggle Stock</button>
+        <button class="btn btn-danger" onclick="deleteProduct(${p.id})">Delete</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// Render manager products (stock only)
+function renderManagerProducts() {
+  const tbody = document.getElementById('manager-products');
+  tbody.innerHTML = '';
+  
+  products.forEach(p => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><img src="${p.image}" alt="${p.name}"></td>
+      <td>${p.name}</td>
+      <td>${p.description}</td>
+      <td>₹${p.price}</td>
+      <td>${p.isOutOfStock ? 'Out' : 'In'}</td>
+      <td>
+        <button class="btn btn-primary" onclick="toggleStock(${p.id})">Toggle Stock</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// Update product price (admin only)
+function updatePrice(id, value) {
+  const p = products.find(p => p.id == id);
+  if (p) {
+    p.price = parseInt(value);
+    localStorage.setItem('products', JSON.stringify(products));
+    renderAdminProducts();
+    renderProducts();
+    showNotification('Price updated');
+  }
+}
+
+// Toggle stock status
+function toggleStock(id) {
+  const p = products.find(p => p.id == id);
+  if (p) {
+    p.isOutOfStock = !p.isOutOfStock;
+    localStorage.setItem('products', JSON.stringify(products));
+    renderAdminProducts();
+    renderManagerProducts();
+    renderProducts();
+    showNotification('Stock status updated');
+  }
+}
+
+// Delete product (admin only)
+function deleteProduct(id) {
+  if (confirm('Are you sure you want to delete this product?')) {
+    products = products.filter(p => p.id !== id);
+    localStorage.setItem('products', JSON.stringify(products));
+    renderProducts();
+    renderAdminProducts();
+    showNotification('Product deleted successfully');
+  }
+}
+
+// Render admin orders
+function renderAdminOrders() {
+  const tbody = document.getElementById('admin-orders');
+  tbody.innerHTML = '';
+  
+  if (orders.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No orders yet</td></tr>';
+    return;
+  }
+  
+  orders.forEach(order => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>#${order.id}</td>
+      <td>${order.address.fullName}<br>${order.address.phone}</td>
+      <td>${order.items.length} items</td>
+      <td>₹${order.total}</td>
+      <td>${order.status}</td>
+      <td>
+        <select onchange="updateOrderStatus(${order.id}, this.value)">
+          <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
+          <option value="Confirmed" ${order.status === 'Confirmed' ? 'selected' : ''}>Confirmed</option>
+          <option value="Preparing" ${order.status === 'Preparing' ? 'selected' : ''}>Preparing</option>
+          <option value="Out for Delivery" ${order.status === 'Out for Delivery' ? 'selected' : ''}>Out for Delivery</option>
+          <option value="Delivered" ${order.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+          <option value="Cancelled" ${order.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+        </select>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// Render manager orders
+function renderManagerOrders() {
+  const tbody = document.getElementById('manager-orders');
+  tbody.innerHTML = '';
+  
+  if (orders.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No orders yet</td></tr>';
+    return;
+  }
+  
+  orders.forEach(order => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>#${order.id}</td>
+      <td>${order.address.fullName}<br>${order.address.phone}</td>
+      <td>${order.items.length} items</td>
+      <td>₹${order.total}</td>
+      <td>${order.status}</td>
+      <td>
+        <select onchange="updateOrderStatus(${order.id}, this.value)">
+          <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
+          <option value="Confirmed" ${order.status === 'Confirmed' ? 'selected' : ''}>Confirmed</option>
+          <option value="Preparing" ${order.status === 'Preparing' ? 'selected' : ''}>Preparing</option>
+          <option value="Out for Delivery" ${order.status === 'Out for Delivery' ? 'selected' : ''}>Out for Delivery</option>
+          <option value="Delivered" ${order.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+          <option value="Cancelled" ${order.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+        </select>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// Update order status
+function updateOrderStatus(id, status) {
+  const order = orders.find(o => o.id === id);
+  if (order) {
+    order.status = status;
+    localStorage.setItem('orders', JSON.stringify(orders));
+    if (currentPage === 'admin') renderAdminOrders();
+    if (currentPage === 'manager') renderManagerOrders();
+    if (currentPage === 'order-history') renderOrderHistory();
+    showNotification('Status updated');
+  }
+}
+
+// Check for new orders (manager)
+function checkNewOrders() {
+  const currentCount = orders.length;
+  if (currentCount > lastOrderCount) {
+    const newOrder = orders[orders.length - 1];
+    popupOrderId = newOrder.id;
+    document.getElementById('popup-order-id').innerText = `Order #${newOrder.id}`;
+    document.getElementById('order-popup').style.display = 'flex';
+    lastOrderCount = currentCount;
+  }
+}
+
+// Accept order
+function acceptOrder(id) {
+  updateOrderStatus(id, 'Confirmed');
+  document.getElementById('order-popup').style.display = 'none';
+}
+
+// Reject order
+function rejectOrder(id) {
+  updateOrderStatus(id, 'Cancelled');
+  document.getElementById('order-popup').style.display = 'none';
+}
+
+// Contact form submission
+document.getElementById('contact-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  showNotification('Message sent successfully! We will get back to you soon.');
+  this.reset();
+});
+
+// Initialize the app when page loads
+window.onload = initApp;
+</script>
+</body>
+</html>
